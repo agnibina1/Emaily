@@ -22,19 +22,17 @@ passport.use(
       proxy: true
     },
 
-    (accessToken, refreshToken, profile, done) => {
-      User.findOne({ googleId: profile.id }).then(existingUser => {
-        if (existingUser) {
-          // User existing in the collection already
-          console.log("user already there");
-          done(null, existingUser);
-        } else {
-          // User not there in collection, lets create one
-          new User({ googleId: profile.id })
-            .save()
-            .then(user => done(null, user));
-        }
-      });
+    async (accessToken, refreshToken, profile, done) => {
+      const existingUser = await User.findOne({ googleId: profile.id });
+      if (existingUser) {
+        // User existing in the collection already
+        console.log("user already there");
+        return done(null, existingUser);
+      }
+      // User not there in collection, lets create one
+      const user = await new User({ googleId: profile.id }).save();
+      done(null, user);
+
       console.log("accessToken", accessToken);
       console.log("refreshToken", refreshToken);
       console.log("profile", profile);
